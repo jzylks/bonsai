@@ -209,6 +209,8 @@ LDAPEntry *
 LDAPEntry_FromLDAPMessage(LDAPMessage *entrymsg, LDAPConnection *conn) {
     int i;
     int contain = -1;
+    int convertbool = 1;
+    int convertlong = 1;
     char *dn;
     char *attr;
     struct berval **values;
@@ -247,19 +249,8 @@ LDAPEntry_FromLDAPMessage(LDAPMessage *entrymsg, LDAPConnection *conn) {
         Py_DECREF(self);
         return NULL;
     }
-    convertbool = PyObject_GetAttr(conn->client, "convert_bool")
-    if (convertbool == NULL) {
-        Py_DECREF(rawval_list);
-        Py_DECREF(self);
-        return NULL;
-    }
-    convertlong = PyObject_GetAttr(conn->client, "convert_long")
-    if (convertlong == NULL) {
-        Py_DECREF(rawval_list);
-        Py_DECREF(convertbool);
-        Py_DECREF(self);
-        return NULL;
-    }
+    convertbool = PyObject_IsTrue(PyObject_GetAttrString(conn->client, "convert_bool"));
+    convertlong = PyObject_IsTrue(PyObject_GetAttrString(conn->client, "convert_long"));
 
     /* Iterate over the LDAP attributes. */
     for (attr = ldap_first_attribute(conn->ld, entrymsg, &ber);
@@ -278,13 +269,9 @@ LDAPEntry_FromLDAPMessage(LDAPMessage *entrymsg, LDAPConnection *conn) {
             if (tmp == NULL) goto error;
             contain = PyObject_IsTrue(PyTuple_GET_ITEM(tmp, 0));
             Py_DECREF(tmp);
-            iconvertbool = PyObject_IsTrue(convertbool);
-            Py_DECREF(convertbool);
-            iconvertlong = PyObject_IsTrue(convertlong);
-            Py_DECREF(convertlong);
             for (i = 0; values[i] != NULL; i++) {
                 /* Convert berval to PyObject*, if it's failed skip it. */
-                val = berval2PyObject(values[i], contain, iconvertbool, iconvertlong);
+                val = berval2PyObject(values[i], contain, convertbool, convertlong);
                 if (val == NULL) continue;
                 /* If the attribute has more value, then append to the list. */
                 if (PyList_Append(lvl, val) != 0) {
