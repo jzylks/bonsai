@@ -55,6 +55,8 @@ class LDAPClient:
         self.__auto_acquire = True
         self.__chase_referrals = True
         self.__managedsait_ctrl = False
+        self.__convert_bool = True
+        self.__convert_long = True
 
     @staticmethod
     def _create_socketpair() -> Tuple[socket.socket, socket.socket]:
@@ -391,6 +393,26 @@ class LDAPClient:
         else:
             self.__tls = False
 
+    def set_convert_bool(self, val: bool) -> None:
+        """
+        Set option for converting TRUE/FALSE raw values to bool.
+
+        :param val: The value of the convert_bool flag
+        """
+        if not isinstance(val, bool):
+            raise TypeError("Parameter's type must be bool.")
+        self.__convert_bool = val
+
+    def set_convert_long(self, val: bool) -> None:
+        """
+        Set option for converting numeric raw values to long.
+
+        :param val: The value of the convert_long flag
+        """
+        if not isinstance(val, bool):
+            raise TypeError("Parameter's type must be bool.")
+        self.__convert_long = val
+
     @property
     def url(self) -> LDAPURL:
         """ The URL of the directory server. """
@@ -529,6 +551,24 @@ class LDAPClient:
     def managedsait(self, value: bool) -> None:
         self.set_managedsait(value)
 
+    @property
+    def convert_bool(self) -> bool:
+        """ Return True if TRUE/FALSE raw values should be converted to bool type """
+        return self.__convert_bool
+
+    @convert_bool.setter
+    def convert_bool(self, value: bool) -> None:
+        self.set_convert_bool(value)
+
+    @property
+    def convert_long(self) -> bool:
+        """ Return True if numeric raw values should be converted to long type """
+        return self.__convert_long
+
+    @convert_long.setter
+    def convert_long(self, value: bool) -> None:
+        self.set_convert_long(value)
+    
     def get_rootDSE(self) -> Optional[LDAPEntry]:
         """
         Returns the server's root DSE entry. The root DSE may contain

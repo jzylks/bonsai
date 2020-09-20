@@ -33,28 +33,33 @@ create_berval(char *value, long int len) {
     to string, bool or long (LDAP has no support for float as far as I know).
     If `keepbytes` param is non-zero, then return bytearray anyway. */
 PyObject *
-berval2PyObject(struct berval *bval, int keepbytes) {
+berval2PyObject(struct berval *bval, int keepbytes, int convertbool, int convertlong) {
     PyObject *bytes = NULL;
     PyObject *obj = NULL;
 
     if (keepbytes == 0) {
-        /* Check that the value is a boolean True. */
-        if (strcmp(bval->bv_val, "TRUE") == 0) {
-            Py_RETURN_TRUE;
-        }
-        /* Check that the value is a boolean False. */
-        if (strcmp(bval->bv_val, "FALSE") == 0) {
-            Py_RETURN_FALSE;
-        }
-        /* Try to convert into Long. */
-        obj = PyLong_FromString(bval->bv_val, NULL, 0);
-        if (obj == NULL ||  PyErr_Occurred()) {
-            if (PyErr_ExceptionMatches(PyExc_ValueError) == 1) {
-                /* ValueError is excepted and will be ignored.*/
-                PyErr_Clear();
+        if (convertbool != 0) {
+            /* Check that the value is a boolean True. */
+            if (strcmp(bval->bv_val, "TRUE") == 0) {
+                Py_RETURN_TRUE;
             }
-        } else {
-            return obj;
+        
+            /* Check that the value is a boolean False. */
+            if (strcmp(bval->bv_val, "FALSE") == 0) {
+                Py_RETURN_FALSE;
+            }
+        }
+        if (convertlong != 0) {
+            /* Try to convert into Long. */
+            obj = PyLong_FromString(bval->bv_val, NULL, 0);
+            if (obj == NULL ||  PyErr_Occurred()) {
+                if (PyErr_ExceptionMatches(PyExc_ValueError) == 1) {
+                    /* ValueError is excepted and will be ignored.*/
+                    PyErr_Clear();
+                }
+            } else {
+                return obj;
+            }
         }
     }
 

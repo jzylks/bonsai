@@ -111,7 +111,7 @@ LDAPModList_Pop(LDAPModList *self) {
 
             for (i = 0; mod_bvals[i] != NULL; i++) {
                 /* Convert bervals to PyObject. */
-                berval = berval2PyObject(mod_bvals[i], 0);
+                berval = berval2PyObject(mod_bvals[i], 0, 1, 1);
                 if (berval == NULL) {
                     Py_DECREF(list);
                     return NULL;

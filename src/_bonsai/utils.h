@@ -32,7 +32,7 @@ extern char asyncmod;
 
 char *lowercase(char *str);
 struct berval *create_berval(char *value, long int len);
-PyObject *berval2PyObject(struct berval *bval, int keepbytes);
+PyObject *berval2PyObject(struct berval *bval, int keepbytes, int convertbool, int convertlong);
 int PyObject2char_withlength(PyObject *obj, char **output, long int *len);
 char *PyObject2char(PyObject *obj);
 struct berval **PyList2BervalList(PyObject *list);
